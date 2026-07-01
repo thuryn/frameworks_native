@@ -557,15 +557,19 @@ void OutputLayer::writeOutputDependentGeometryStateToHWC(HWC2::Layer* hwcLayer,
     }
 
     uint32_t z_udfps = z;
-    if ((strncmp(getLayerFE().getDebugName(), UDFPS_LAYER_NAME, strlen(UDFPS_LAYER_NAME)) == 0) ||
-        (strncmp(getLayerFE().getDebugName(), UDFPS_BIOMETRIC_PROMPT_LAYER_NAME,
-                 strlen(UDFPS_BIOMETRIC_PROMPT_LAYER_NAME)) == 0)) {
+    if (strstr(getLayerFE().getDebugName(), "SurfaceView") != nullptr &&
+        strstr(getLayerFE().getDebugName(), "UdfpsControllerOverlay") != nullptr) {
+        z_udfps = getUdfpsZOrder(z, true);
+    } else if ((strstr(getLayerFE().getDebugName(), UDFPS_LAYER_NAME) != nullptr) ||
+               (strstr(getLayerFE().getDebugName(), UDFPS_BIOMETRIC_PROMPT_LAYER_NAME) != nullptr)) {
         z_udfps = getUdfpsZOrder(z, false);
     } else if (strncmp(getLayerFE().getDebugName(), UDFPS_DIM_LAYER_NAME,
                        strlen(UDFPS_DIM_LAYER_NAME)) == 0) {
         z_udfps = getUdfpsDimZOrder(z);
-    } else if (strstr(getLayerFE().getDebugName(), UDFPS_TOUCHED_LAYER_NAME) != nullptr) {
-        z_udfps = getUdfpsZOrder(z, true);
+    }
+
+    if (strstr(getLayerFE().getDebugName(), "Udfps") != nullptr) {
+        ALOGE("Udfps Debug: layerName='%s', z=%u, z_udfps=%u", getLayerFE().getDebugName(), z, z_udfps);
     }
 
     if (auto error = hwcLayer->setZOrder(z_udfps); error != hal::Error::NONE) {

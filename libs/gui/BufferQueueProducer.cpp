@@ -465,6 +465,13 @@ status_t BufferQueueProducer::dequeueBuffer(int* outSlot, sp<android::Fence>* ou
         std::lock_guard<std::mutex> lock(mCore->mMutex);
         mConsumerName = mCore->mConsumerName;
 
+        if (strstr(mConsumerName.c_str(), "UdfpsControllerOverlay") != nullptr &&
+            strstr(mConsumerName.c_str(), "SurfaceView") == nullptr) {
+            //usage |= 0x200000000ULL;
+            ALOGE("[UDFPS] Adding custom Oplus usage bit to %s, new usage: %" PRIx64,
+                  mConsumerName.c_str(), usage);
+        }
+
         if (mCore->mIsAbandoned) {
             BQ_LOGE("dequeueBuffer: BufferQueue has been abandoned");
             return NO_INIT;
@@ -1627,6 +1634,13 @@ void BufferQueueProducer::allocateBuffers(uint32_t width, uint32_t height,
             allocFormat = format != 0 ? format : mCore->mDefaultBufferFormat;
             allocUsage = usage | mCore->mConsumerUsageBits;
             allocName.assign(mCore->mConsumerName.c_str(), mCore->mConsumerName.size());
+
+            if (strstr(allocName.c_str(), "UdfpsControllerOverlay") != nullptr &&
+                strstr(allocName.c_str(), "SurfaceView") == nullptr) {
+                //allocUsage |= 0x200000000ULL;
+                ALOGE("[UDFPS] Adding custom Oplus usage bit during allocateBuffers to %s, new usage: %" PRIx64,
+                      allocName.c_str(), allocUsage);
+            }
 
 #if COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(BQ_EXTENDEDALLOCATE)
             allocOptions = mCore->mAdditionalOptions;
