@@ -1105,6 +1105,9 @@ cc_library {
         "liblog",
         "process_info_service_aidl-cpp",
     ],
+    export_shared_lib_headers: [
+        "process_info_service_aidl-cpp",
+    ],
 }
 
 cc_library {
